@@ -42,12 +42,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ✅ Головна функція запуску бота
 async def start_bot():
-
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
+    # Використання вебхуків для уникнення конфліктів
+    webhook_url = os.getenv("WEBHOOK_URL")
+    application.bot.set_webhook(webhook_url)
+    
     print("✅ Бот працює! Натисніть Stop, щоб зупинити.")
-    await application.run_polling()
+    await application.start_webhook(listen="0.0.0.0", port=int(os.getenv("PORT", 8443)), url_path=webhook_url)
 
 if __name__ == "__main__":
     asyncio.run(start_bot())

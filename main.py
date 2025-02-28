@@ -178,6 +178,7 @@ async def send_survey(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text('Натисніть "Почати анкету" для початку:', reply_markup=reply_markup)
+    print("📋 Надсилання анкети")
 
 # ✅ Обробка натискання кнопки "Почати анкету"
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -185,6 +186,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     await query.edit_message_text(text="Анкета почалася. Відповідайте на наступні питання:")
     context.user_data['survey_step'] = 0
+    print("📋 Початок анкети")
     await ask_next_question(update, context)
 
 # ✅ Запит наступного питання анкети
@@ -196,6 +198,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Розкажіть про себе"
     ]
     step = context.user_data.get('survey_step', 0)
+    print(f"📋 Запит наступного питання, крок {step}")
     if step < len(questions):
         await context.bot.send_message(chat_id=update.effective_chat.id, text=questions[step])
         context.user_data['survey_step'] = step + 1

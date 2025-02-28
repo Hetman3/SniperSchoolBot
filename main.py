@@ -27,6 +27,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         print(f"🟢 Отримано повідомлення від {user_id}: {user_message}")
 
+        # Додано визначення змінної messages
+        messages = [{"role": "system", "content": "Ти Дорослий та мудрий чоловік, твоє імʼя Джон..."}]
+        messages.append({"role": "user", "content": user_message})
+
         response = await client.chat.completions.create(model="gpt-4o", messages=messages)
         bot_response_text = response.choices[0].message.content
 

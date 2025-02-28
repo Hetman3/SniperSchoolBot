@@ -46,6 +46,18 @@ async def initialize_db(pool):
         except Exception as e:
             print(f"❌ Помилка створення таблиці: {e}")
 
+# ✅ Функція збереження повідомлень у базу даних
+async def save_message_to_db(pool, user_id, message, is_user):
+    async with pool.acquire() as conn:
+        try:
+            await conn.execute("""
+                INSERT INTO chat_history (user_id, message, is_user)
+                VALUES ($1, $2, $3)
+            """, user_id, message, is_user)
+            print(f"✅ Повідомлення збережено: {message}")
+        except Exception as e:
+            print(f"❌ Помилка збереження повідомлення: {e}")
+
 # ✅ Функція очищення кешу
 async def clear_old_cache(context: ContextTypes.DEFAULT_TYPE):
     if "chat_history" in context.chat_data:

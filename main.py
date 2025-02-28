@@ -184,17 +184,24 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     await query.edit_message_text(text="Анкета почалася. Відповідайте на наступні питання:")
+    context.user_data['survey_step'] = 0
+    await ask_next_question(update, context)
 
+# ✅ Запит наступного питання анкети
+async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     questions = [
         "Яке ваше ім'я?",
         "Скільки вам років?",
         "Який ваш email?",
         "Розкажіть про себе"
     ]
-
-    for question in questions:
-        await context.bot.send_message(chat_id=query.message.chat_id, text=question)
-        # Тут можна додати логіку для збору відповідей
+    step = context.user_data.get('survey_step', 0)
+    if step < len(questions):
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=questions[step])
+        context.user_data['survey_step'] = step + 1
+    else:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="Дякуємо за заповнення анкети!")
+        # Тут можна додати логіку для збереження відповідей
 
 # ✅ Головна функція запуску бота
 async def start_bot():

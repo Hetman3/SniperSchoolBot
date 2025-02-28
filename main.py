@@ -41,7 +41,6 @@ async def start_bot():
 
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    application.job_queue.run_daily(clear_old_cache, time=datetime.time(hour=3, tzinfo=TZ_KYIV))
 
     print("✅ Бот працює! Натисніть Stop, щоб зупинити.")
     await application.run_polling()

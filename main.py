@@ -168,6 +168,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await save_message_to_db(pool, user_id, bot_response_text, is_user=False)
 
+        # Викликаємо функцію для наступного запитання анкети
+        await ask_next_question(update, context)
+
     except Exception as e:
         print(f"❌ Неочікувана помилка: {e}")
 
@@ -191,20 +194,32 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ✅ Запит наступного питання анкети
 async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    questions = [
-        "Яке ваше ім'я?",
-        "Скільки вам років?",
-        "Який ваш email?",
-        "Розкажіть про себе"
-    ]
-    step = context.user_data.get('survey_step', 0)
-    print(f"📋 Запит наступного питання, крок {step}")
-    if step < len(questions):
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=questions[step])
-        context.user_data['survey_step'] = step + 1
-    else:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="Дякуємо за заповнення анкети!")
-        # Тут можна додати логіку для збереження відповідей
+    user_id = update.message.chat_id
+    user_response = update.message.text
+    pool = context.bot_data["db_pool"]
+    
+    # Зберігаємо відповідь користувача
+    await save_message_to_db(pool, user_id, user_response, is_user=True)
+    
+    # Отримуємо історію чату для контексту
+    history = await get_chat_history_cached(context, pool, user_id)
+    messages = [{"role": "system", "content": "Ти Дорослий та мудрий чоловік, твоє імʼя Джон..."}]
+    
+    for record in history:
+        role = "user" if record["is_user"] else "assistant"
+        messages.append({"role": role, "content": record["message"]})
+    
+    messages.append({"role": "user", "content": user_response})
+    
+    # Використовуємо GPT для генерації наступного запитання
+    response = await client.chat.completions.create(model="gpt-4o", messages=messages)
+    next_question = response.choices[0].message.content
+    
+    print(f"📋 Наступне запитання: {next_question}")
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=next_question)
+    
+    # Зберігаємо запитання від бота
+    await save_message_to_db(pool, user_id, next_question, is_user=False)
 
 # ✅ Головна функція запуску бота
 async def start_bot():

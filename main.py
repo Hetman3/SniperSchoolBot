@@ -41,8 +41,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ✅ Головна функція запуску бота
 async def start_bot():
-    db_pool = await connect_to_db()
-    await initialize_db(db_pool)
 
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     application.bot_data["db_pool"] = db_pool

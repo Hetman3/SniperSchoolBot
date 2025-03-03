@@ -188,6 +188,11 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['answers'] = []
         print("📋 Початок анкети")
         await ask_next_question(update, context)
+    elif query.data == 'kursant':
+        await query.edit_message_text(text="🫡Вітаю тебе курсанте! Давай визначимо твій базовий рівень знань і пройдемо простенький тест😉")
+        await send_survey(update, context)
+    elif query.data == 'instructor':
+        await query.edit_message_text(text="🫡Вітаю інструкторе! Для вас доступні адміністративні функції.")
     else:
         await ask_next_question(update, context)
 
@@ -231,6 +236,15 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Опитування завершено! Ви відповіли правильно на {context.user_data['correct_answers']} з {len(context.user_data['questions'])} питань.")
         context.user_data.clear()
 
+# ✅ Функція привітання
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        [InlineKeyboardButton("Курсант", callback_data='kursant')],
+        [InlineKeyboardButton("Інструктор", callback_data='instructor')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text('🫡Привіт Козаче! Давай визначимось з тим хто такий!?', reply_markup=reply_markup)
+
 # ✅ Головна функція запуску бота
 async def start_bot():
     db_pool = await connect_to_db()
@@ -238,6 +252,7 @@ async def start_bot():
 
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     application.bot_data["db_pool"] = db_pool
+    application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("cache_status", cache_status))
     application.add_handler(CommandHandler("clear_history", clear_history))
     application.add_handler(CommandHandler("survey", send_survey))  # Додаємо обробник для команди /survey

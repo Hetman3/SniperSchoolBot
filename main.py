@@ -6,9 +6,9 @@ import asyncpg
 import time
 import datetime
 import pytz
-import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
+from survey_template import survey_title, questions
 
 # ✅ Запобігання конфліктів асинхронного циклу
 nest_asyncio.apply()
@@ -181,25 +181,14 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     if query.data == 'start_survey':
-        await query.edit_message_text(text="Анкета почалася. Відповідайте на наступні питання:")
+        await query.edit_message_text(text=f"{survey_title}\n\nАнкета почалася. Відповідайте на наступні питання:")
         context.user_data['survey_step'] = 0
         context.user_data['correct_answers'] = 0
-        context.user_data['questions'] = generate_questions()
+        context.user_data['questions'] = questions
         print("📋 Початок анкети")
         await ask_next_question(update, context)
     else:
         await ask_next_question(update, context)
-
-# ✅ Генерація питань
-def generate_questions():
-    questions = [
-        {"question": "Питання 1?", "options": ["Варіант 1", "Варіант 2", "Варіант 3", "Варіант 4"], "correct": random.randint(0, 3)},
-        {"question": "Питання 2?", "options": ["Варіант 1", "Варіант 2", "Варіант 3", "Варіант 4"], "correct": random.randint(0, 3)},
-        {"question": "Питання 3?", "options": ["Варіант 1", "Варіант 2", "Варіант 3", "Варіант 4"], "correct": random.randint(0, 3)},
-        {"question": "Питання 4?", "options": ["Варіант 1", "Варіант 2", "Варіант 3", "Варіант 4"], "correct": random.randint(0, 3)},
-        {"question": "Питання 5?", "options": ["Варіант 1", "Варіант 2", "Варіант 3", "Варіант 4"], "correct": random.randint(0, 3)},
-    ]
-    return questions
 
 # ✅ Запит наступного питання анкети
 async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):

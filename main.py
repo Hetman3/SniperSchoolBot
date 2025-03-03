@@ -186,10 +186,10 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ✅ Запит наступного питання анкети
 async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.chat_id
-    user_response = update.message.text
+    user_id = update.effective_chat.id
+    user_response = update.message.text if update.message else ""
     pool = context.bot_data["db_pool"]
-    
+
     # Зберігаємо відповідь користувача
     await save_message_to_db(pool, user_id, user_response, is_user=True)
     

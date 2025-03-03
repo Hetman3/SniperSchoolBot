@@ -210,12 +210,17 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
         question_data = context.user_data['questions'][context.user_data['survey_step']]
         
         # Перевірка залежності
-        if question_data['depends_on']:
+        if 'depends_on' in question_data and question_data['depends_on']:
             dependency = question_data['depends_on']
             if context.user_data['answers'][dependency['question_index']] != dependency['correct_value']:
                 context.user_data['survey_step'] += 1
                 await ask_next_question(update, context)
                 return
+
+        # Перевірка наявності варіантів відповідей
+        if 'options' not in question_data or not question_data['options']:
+            await context.bot.send_message(chat_id=update.effective_chat.id, text="Помилка: питання не має варіантів відповідей.")
+            return
 
         keyboard = [[InlineKeyboardButton(option, callback_data=str(i))] for i, option in enumerate(question_data['options'])]
         reply_markup = InlineKeyboardMarkup(keyboard)

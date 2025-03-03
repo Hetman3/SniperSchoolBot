@@ -6,6 +6,7 @@ import asyncpg
 import time
 import datetime
 import pytz
+import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
@@ -181,35 +182,45 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     await query.edit_message_text(text="Анкета почалася. Відповідайте на наступні питання:")
     context.user_data['survey_step'] = 0
+    context.user_data['correct_answers'] = 0
+    context.user_data['questions'] = generate_questions()
     print("📋 Початок анкети")
     await ask_next_question(update, context)
+
+# ✅ Генерація питань
+def generate_questions():
+    questions = [
+        {"question": "Питання 1?", "options": ["Варіант 1", "Варіант 2", "Варіант 3", "Варіант 4"], "correct": random.randint(0, 3)},
+        {"question": "Питання 2?", "options": ["Варіант 1", "Варіант 2", "Варіант 3", "Варіант 4"], "correct": random.randint(0, 3)},
+        {"question": "Питання 3?", "options": ["Варіант 1", "Варіант 2", "Варіант 3", "Варіант 4"], "correct": random.randint(0, 3)},
+        {"question": "Питання 4?", "options": ["Варіант 1", "Варіант 2", "Варіант 3", "Варіант 4"], "correct": random.randint(0, 3)},
+        {"question": "Питання 5?", "options": ["Варіант 1", "Варіант 2", "Варіант 3", "Варіант 4"], "correct": random.randint(0, 3)},
+    ]
+    return questions
 
 # ✅ Запит наступного питання анкети
 async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_chat.id
-    user_response = update.message.text if update.message else ""
     pool = context.bot_data["db_pool"]
 
     # Зберігаємо відповідь користувача
-    await save_message_to_db(pool, user_id, user_response, is_user=True)
+    if 'survey_step' in context.user_data and context.user_data['survey_step'] > 0:
+        user_response = int(update.callback_query.data)
+        correct_answer = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
+        if user_response == correct_answer:
+            context.user_data['correct_answers'] += 1
     
-    # Отримуємо історію чату для контексту
-    history = await get_chat_history_cached(context, pool, user_id)
-    messages = [{"role": "system", "content": "Ти Дорослий та мудрий чоловік, твоє імʼя Джон..."}]
-    
-    for record in history:
-        role = "user" if record["is_user"] else "assistant"
-        messages.append({"role": role, "content": record["message"]})
-    
-    messages.append({"role": "user", "content": user_response})
-    
-    next_question = "Це тестове питання. Виберіть один з варіантів: \n1. Варіант 1\n2. Варіант 2\n3. Варіант 3\n4. Варіант 4"
-    
-    print(f"📋 Наступне запитання: {next_question}")
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=next_question)
-    
-    # Зберігаємо запитання від бота
-    await save_message_to_db(pool, user_id, next_question, is_user=False)
+    # Перевіряємо, чи є ще питання
+    if context.user_data['survey_step'] < len(context.user_data['questions']):
+        question_data = context.user_data['questions'][context.user_data['survey_step']]
+        keyboard = [[InlineKeyboardButton(option, callback_data=str(i))] for i, option in enumerate(question_data['options'])]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=question_data['question'], reply_markup=reply_markup)
+        context.user_data['survey_step'] += 1
+    else:
+        # Закінчення опитування
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Опитування завершено! Ви відповіли правильно на {context.user_data['correct_answers']} з {len(context.user_data['questions'])} питань.")
+        context.user_data.clear()
 
 # ✅ Головна функція запуску бота
 async def start_bot():

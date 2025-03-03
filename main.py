@@ -180,12 +180,15 @@ async def send_survey(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    await query.edit_message_text(text="Анкета почалася. Відповідайте на наступні питання:")
-    context.user_data['survey_step'] = 0
-    context.user_data['correct_answers'] = 0
-    context.user_data['questions'] = generate_questions()
-    print("📋 Початок анкети")
-    await ask_next_question(update, context)
+    if query.data == 'start_survey':
+        await query.edit_message_text(text="Анкета почалася. Відповідайте на наступні питання:")
+        context.user_data['survey_step'] = 0
+        context.user_data['correct_answers'] = 0
+        context.user_data['questions'] = generate_questions()
+        print("📋 Початок анкети")
+        await ask_next_question(update, context)
+    else:
+        await ask_next_question(update, context)
 
 # ✅ Генерація питань
 def generate_questions():
@@ -200,12 +203,12 @@ def generate_questions():
 
 # ✅ Запит наступного питання анкети
 async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
     user_id = update.effective_chat.id
     pool = context.bot_data["db_pool"]
 
     # Зберігаємо відповідь користувача
     if 'survey_step' in context.user_data and context.user_data['survey_step'] > 0:
-        query = update.callback_query
         user_response = int(query.data)
         correct_answer = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
         if user_response == correct_answer:
@@ -238,7 +241,7 @@ async def start_bot():
     application.job_queue.run_daily(clear_old_cache, time=datetime.time(hour=3, tzinfo=TZ_KYIV))
 
     print("✅ Бот працює! Натисніть Stop, щоб зупинити.")
-    await application.run_polling()
+    await application.start_polling()
 
 if __name__ == "__main__":
     asyncio.run(start_bot())

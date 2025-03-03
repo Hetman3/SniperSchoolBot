@@ -241,7 +241,7 @@ async def start_bot():
     application.job_queue.run_daily(clear_old_cache, time=datetime.time(hour=3, tzinfo=TZ_KYIV))
 
     print("✅ Бот працює! Натисніть Stop, щоб зупинити.")
-    await application.start_polling()
+    await application.run_polling()
 
 if __name__ == "__main__":
     asyncio.run(start_bot())

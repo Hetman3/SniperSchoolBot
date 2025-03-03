@@ -8,7 +8,6 @@ import datetime
 import pytz
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
-from openai import AsyncOpenAI
 
 # ✅ Запобігання конфліктів асинхронного циклу
 nest_asyncio.apply()
@@ -17,7 +16,6 @@ nest_asyncio.apply()
 TZ_KYIV = pytz.timezone("Europe/Kiev")
 
 # ✅ Ініціалізація API
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -160,13 +158,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         messages.append({"role": "user", "content": user_message})
 
-        response = await client.chat.completions.create(model="gpt-4o", messages=messages)
-        bot_response_text = response.choices[0].message.content
-
-        print(f"🟢 Відповідь бота: {bot_response_text}")
-        await update.message.reply_text(bot_response_text)
-
-        await save_message_to_db(pool, user_id, bot_response_text, is_user=False)
+        await save_message_to_db(pool, user_id, user_message, is_user=True)
 
         # Викликаємо функцію для наступного запитання анкети
         await ask_next_question(update, context)
@@ -211,9 +203,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     messages.append({"role": "user", "content": user_response})
     
-    # Використовуємо GPT для генерації наступного запитання
-    response = await client.chat.completions.create(model="gpt-4o", messages=messages)
-    next_question = response.choices[0].message.content
+    next_question = "Це тестове питання. Виберіть один з варіантів: \n1. Варіант 1\n2. Варіант 2\n3. Варіант 3\n4. Варіант 4"
     
     print(f"📋 Наступне запитання: {next_question}")
     await context.bot.send_message(chat_id=update.effective_chat.id, text=next_question)

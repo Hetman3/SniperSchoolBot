@@ -205,11 +205,12 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Зберігаємо відповідь користувача
     if 'survey_step' in context.user_data and context.user_data['survey_step'] > 0:
-        user_response = int(update.callback_query.data)
+        query = update.callback_query
+        user_response = int(query.data)
         correct_answer = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
         if user_response == correct_answer:
             context.user_data['correct_answers'] += 1
-    
+
     # Перевіряємо, чи є ще питання
     if context.user_data['survey_step'] < len(context.user_data['questions']):
         question_data = context.user_data['questions'][context.user_data['survey_step']]

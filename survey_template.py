@@ -116,8 +116,8 @@ questions = [
     {
         "number": 17,
         "question": "Дайте опис Балістичної (тактичної) сітки.",
-        "options": None,
-        "correct": None,
+        "options": ["1.5 MRAD", "1 MRAD", "0.5 MRAD", "0.3 MRAD"],
+        "correct": [2],
         "depends_on": None
     },
     {

@@ -173,7 +173,10 @@ async def send_survey(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("Почати анкету", callback_data='start_survey')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text('Натисніть "Почати анкету" для початку:', reply_markup=reply_markup)
+    if update.message:
+        await update.message.reply_text('Натисніть "Почати анкету" для початку:', reply_markup=reply_markup)
+    elif update.callback_query:
+        await update.callback_query.message.reply_text('Натисніть "Почати анкету" для початку:', reply_markup=reply_markup)
     print("📋 Надсилання анкети")
 
 # ✅ Обробка натискання кнопки "Почати анкету"

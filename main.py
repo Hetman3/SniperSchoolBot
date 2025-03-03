@@ -185,6 +185,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['survey_step'] = 0
         context.user_data['correct_answers'] = 0
         context.user_data['questions'] = questions
+        context.user_data['answers'] = []
         print("📋 Початок анкети")
         await ask_next_question(update, context)
     else:
@@ -199,13 +200,23 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Зберігаємо відповідь користувача
     if 'survey_step' in context.user_data and context.user_data['survey_step'] > 0:
         user_response = int(query.data)
-        correct_answer = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
-        if user_response == correct_answer:
+        correct_answers = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
+        if user_response in correct_answers:
             context.user_data['correct_answers'] += 1
+        context.user_data['answers'].append(user_response)
 
     # Перевіряємо, чи є ще питання
     if context.user_data['survey_step'] < len(context.user_data['questions']):
         question_data = context.user_data['questions'][context.user_data['survey_step']]
+        
+        # Перевірка залежності
+        if question_data['depends_on']:
+            dependency = question_data['depends_on']
+            if context.user_data['answers'][dependency['question_index']] != dependency['correct_value']:
+                context.user_data['survey_step'] += 1
+                await ask_next_question(update, context)
+                return
+
         keyboard = [[InlineKeyboardButton(option, callback_data=str(i))] for i, option in enumerate(question_data['options'])]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await context.bot.send_message(chat_id=update.effective_chat.id, text=question_data['question'], reply_markup=reply_markup)

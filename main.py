@@ -230,7 +230,17 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_message(chat_id=update.effective_chat.id, text="Помилка: питання не має варіантів відповідей.")
             return
 
-        keyboard = [[InlineKeyboardButton(option, callback_data=str(i))] for i, option in enumerate(question_data['options'])]
+        # Розбиваємо довгі текстові відповіді на кілька рядків
+        max_length = 40
+        keyboard = []
+        for i, option in enumerate(question_data['options']):
+            if len(option) > max_length:
+                split_option = [option[j:j+max_length] for j in range(0, len(option), max_length)]
+                option_text = "\n".join(split_option)
+            else:
+                option_text = option
+            keyboard.append([InlineKeyboardButton(option_text, callback_data=str(i))])
+        
         reply_markup = InlineKeyboardMarkup(keyboard)
         await context.bot.send_message(chat_id=update.effective_chat.id, text=question_data['question'], reply_markup=reply_markup)
         context.user_data['survey_step'] += 1

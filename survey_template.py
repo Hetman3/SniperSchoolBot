@@ -6,7 +6,7 @@ questions = [
         "question": "Довжина ствола вашої гвинтівки, в дюймах?",
         "options": ["22", "27", "24,5", "20"],
         "correct": [3],
-        "depends_on": None
+        "depends_on": 
     },
     {
         "number": 2,

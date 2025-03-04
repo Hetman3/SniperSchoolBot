@@ -228,6 +228,8 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Перевірка наявності варіантів відповідей
         if 'options' not in question_data or not question_data['options']:
             await context.bot.send_message(chat_id=update.effective_chat.id, text="Помилка: питання не має варіантів відповідей.")
+            context.user_data['survey_step'] += 1
+            await ask_next_question(update, context)
             return
 
         # Створюємо буквенні ідентифікатори для варіантів відповідей

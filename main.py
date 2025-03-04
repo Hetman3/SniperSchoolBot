@@ -246,6 +246,60 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Закінчення опитування
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Опитування завершено! Ви відповіли правильно на {context.user_data['correct_answers']} з {len(context.user_data['questions'])} питань.")
         context.user_data.clear()
+        
+# ✅ Функція перевірки відповіді на попереднє питання
+async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    user_id = update.effective_chat.id
+    pool = context.bot_data["db_pool"]
+
+    # Зберігаємо відповідь користувача
+    if 'survey_step' in context.user_data and context.user_data['survey_step'] > 0:
+        user_response = query.data.split('_')[1]
+        
+        # Перевірка, чи відповідь вже була оброблена
+        if 'last_answer' in context.user_data and context.user_data['last_answer'] == user_response:
+            return
+        
+        correct_answers = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
+        if user_response in correct_answers:
+            context.user_data['correct_answers'] += 1
+        context.user_data['answers'].append(user_response)
+        context.user_data['last_answer'] = user_response
+
+    # Перевіряємо, чи є ще питання
+    if context.user_data['survey_step'] < len(context.user_data['questions']):
+        question_data = context.user_data['questions'][context.user_data['survey_step']]
+        
+        # Перевірка залежності
+        if 'depends_on' in question_data and question_data['depends_on']:
+            dependency = question_data['depends_on']
+            if context.user_data['answers'][dependency['question_index']] != dependency['correct_value']:
+                context.user_data['survey_step'] += 1
+                await ask_next_question(update, context)
+                return
+
+        # Перевірка наявності варіантів відповідей
+        if 'options' not in question_data or not question_data['options']:
+            await context.bot.send_message(chat_id=update.effective_chat.id, text="Помилка: питання не має варіантів відповідей.")
+            context.user_data['survey_step'] += 1
+            await ask_next_question(update, context)
+            return
+
+        # Створюємо буквенні ідентифікатори для варіантів відповідей
+        option_identifiers = ["A", "B", "C", "D", "E", "F"]
+        keyboard = []
+        for i, option in enumerate(question_data['options']):
+            option_text = f"{option_identifiers[i]}. {option}"
+            keyboard.append([InlineKeyboardButton(option_identifiers[i], callback_data=f"{context.user_data['survey_step']}_{option_identifiers[i]}")])
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"{question_data['question']}\n\n" + "\n".join([f"{option_identifiers[i]}. {opt}" for i, opt in enumerate(question_data['options'])]), reply_markup=reply_markup)
+        context.user_data['survey_step'] += 1
+    else:
+        # Закінчення опитування
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Опитування завершено! Ви відповіли правильно на {context.user_data['correct_answers']} з {len(context.user_data['questions'])} питань.")
+        context.user_data.clear()
 
 # ✅ Функція привітання
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):

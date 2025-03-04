@@ -116,7 +116,7 @@ questions = [
     {
         "number": 17,
         "question": "***Які з переліку назв сіток вказані на малюнках?",
-        "options": ["TMR", "MIL-R", "MIL-DOT", "MIL-MOA", "Duplex Crosshair", "Пеньок", "Posp", "TRR", "Horus"],
+        "options": ["TMR", "MIL-R", "MIL-DOT", "MIL-MOA", "Duplex Crosshair"],
         "correct": [2,4,8],
         
     },

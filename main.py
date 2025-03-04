@@ -207,7 +207,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Зберігаємо відповідь користувача
     if 'survey_step' in context.user_data and context.user_data['survey_step'] > 0:
-        user_response = query.data
+        user_response = query.data.split('_')[1]
         correct_answers = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
         if user_response in correct_answers:
             context.user_data['correct_answers'] += 1

@@ -207,7 +207,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Зберігаємо відповідь користувача
     if 'survey_step' in context.user_data and context.user_data['survey_step'] > 0:
-        user_response = int(query.data)
+        user_response = query.data
         correct_answers = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
         if user_response in correct_answers:
             context.user_data['correct_answers'] += 1
@@ -230,19 +230,15 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_message(chat_id=update.effective_chat.id, text="Помилка: питання не має варіантів відповідей.")
             return
 
-        # Розбиваємо довгі текстові відповіді на кілька рядків
-        max_length = 40
+        # Створюємо буквенні ідентифікатори для варіантів відповідей
+        option_identifiers = ["A", "B", "C", "D", "E", "F"]
         keyboard = []
         for i, option in enumerate(question_data['options']):
-            if len(option) > max_length:
-                split_option = [option[j:j+max_length] for j in range(0, len(option), max_length)]
-                option_text = "\n".join(split_option)
-            else:
-                option_text = option
-            keyboard.append([InlineKeyboardButton(option_text, callback_data=str(i))])
+            option_text = f"{option_identifiers[i]}. {option}"
+            keyboard.append([InlineKeyboardButton(option_identifiers[i], callback_data=option_identifiers[i])])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=question_data['question'], reply_markup=reply_markup)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"{question_data['question']}\n\n" + "\n".join([f"{option_identifiers[i]}. {opt}" for i, opt in enumerate(question_data['options'])]), reply_markup=reply_markup)
         context.user_data['survey_step'] += 1
     else:
         # Закінчення опитування

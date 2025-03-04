@@ -192,7 +192,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print("📋 Початок анкети")
         await ask_next_question(update, context)
     elif query.data == 'kursant':
-        await query.edit_message_text(text="🫡Вітаю тебе курсанте! Давай визначимо твій базовий рівень знань і пройдемо простенький тест😉")
+        await query.edit_message_text(text="🫡Вітаю тебе курсанте! Давай визначимо твій базовий рівень знань і пройдемо прост�[...]")
         await send_survey(update, context)
     elif query.data == 'instructor':
         await query.edit_message_text(text="🫡Вітаю інструкторе! Для вас доступні адміністративні функції.")
@@ -237,7 +237,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = []
         for i, option in enumerate(question_data['options']):
             option_text = f"{option_identifiers[i]}. {option}"
-            keyboard.append([InlineKeyboardButton(option_identifiers[i], callback_data=option_identifiers[i])])
+            keyboard.append([InlineKeyboardButton(option_identifiers[i], callback_data=f"{context.user_data['survey_step']}_{option_identifiers[i]}")])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"{question_data['question']}\n\n" + "\n".join([f"{option_identifiers[i]}. {opt}" for i, opt in enumerate(question_data['options'])]), reply_markup=reply_markup)

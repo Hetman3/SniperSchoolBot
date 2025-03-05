@@ -219,7 +219,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['answers'].append(user_response)
         context.user_data['last_answer'] = user_response
         
-        # Деактивація всіх кнопок
+        # Деактивація всіх кнопок після відповіді
         await query.edit_message_reply_markup(reply_markup=None)
 
     # Перевіряємо, чи є ще питання

@@ -220,7 +220,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['last_answer'] = user_response
         
         # Деактивація всіх кнопок
-        await query.edit_message_reply_markup(reply_markup=None)
+        await query.edit_message_text(text=f"Ви відповіли: {correct_answers}")
 
     # Перевіряємо, чи є ще питання
     if context.user_data['survey_step'] < len(context.user_data['questions']):

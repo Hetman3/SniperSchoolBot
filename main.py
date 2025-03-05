@@ -209,15 +209,12 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if 'survey_step' in context.user_data and context.user_data['survey_step'] > 0:
         user_response = query.data.split('_')[1]
         
-        # Перевірка, чи відповідь вже була оброблена
-        if 'last_answer' in context.user_data and context.user_data['last_answer'] == user_response:
-            return
+        # Видаляємо перевірку `last_answer`
         
         correct_answers = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
         if user_response in correct_answers:
             context.user_data['correct_answers'] += 1
         context.user_data['answers'].append(user_response)
-        context.user_data['last_answer'] = user_response
         
         # Деактивація всіх кнопок
         await query.edit_message_reply_markup(reply_markup=None)

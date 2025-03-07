@@ -209,13 +209,11 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if 'survey_step' in context.user_data and context.user_data['survey_step'] > 0:
         user_response = query.data.split('_')[1]
 
-        # Видаляємо перевірку `last_answer`
-        
         correct_answers = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
         if user_response in correct_answers:
             context.user_data['correct_answers'] += 1
         context.user_data['answers'].append(user_response)
-        
+
         # Деактивація всіх кнопок
         await query.edit_message_reply_markup(reply_markup=None)
 
@@ -244,7 +242,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for i, option in enumerate(question_data['options']):
             option_text = f"{option_identifiers[i]}. {option}"
             keyboard.append([InlineKeyboardButton(option_identifiers[i], callback_data=f"{context.user_data['survey_step']}_{option_identifiers[i]}")])
-        
+
         reply_markup = InlineKeyboardMarkup(keyboard)
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"{question_data['question']}\n\n" + "\n".join([f"{option_identifiers[i]}. {opt}" for i, opt in enumerate(question_data['options'])]), reply_markup=reply_markup)
         context.user_data['survey_step'] += 1

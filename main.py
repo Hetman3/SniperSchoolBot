@@ -246,7 +246,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         # Закінчення опитування
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Опитування завершено! Ви відповіли правильно на {context.user_data['correct_answers']} з {len(context.user_data['questions'])} питань.")
-        context.user_data.clear()
+        context.user_data.clear() 
         
 # ✅ Функція перевірки відповіді на попереднє питання
 async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):

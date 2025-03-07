@@ -208,7 +208,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Зберігаємо відповідь користувача
     if 'survey_step' in context.user_data and context.user_data['survey_step'] > 0:
         user_response = query.data.split('_')[1]
-        
+
         # Видаляємо перевірку `last_answer`
         
         correct_answers = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
@@ -222,7 +222,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Перевіряємо, чи є ще питання
     if context.user_data['survey_step'] < len(context.user_data['questions']):
         question_data = context.user_data['questions'][context.user_data['survey_step']]
-        
+
         # Перевірка залежності
         if 'depends_on' in question_data and question_data['depends_on']:
             dependency = question_data['depends_on']

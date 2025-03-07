@@ -212,6 +212,9 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
         correct_answers = context.user_data['questions'][context.user_data['survey_step'] - 1]['correct']
         if user_response in correct_answers:
             context.user_data['correct_answers'] += 1
+            print(f"Правильна відповідь: {user_response}, Загальна кількість правильних відповідей: {context.user_data['correct_answers']}")
+        else:
+            print(f"Неправильна відповідь: {user_response}")
         context.user_data['answers'].append(user_response)
 
         # Деактивація всіх кнопок після відповіді
@@ -249,6 +252,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         # Закінчення опитування
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Опитування завершено! Ви відповіли правильно на {context.user_data['correct_answers']} з {len(context.user_data['questions'])} питань.")
+        print(f"Завершення опитування. Загальна кількість правильних відповідей: {context.user_data['correct_answers']}")
         context.user_data.clear()
 
 # ✅ Функція привітання

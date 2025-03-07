@@ -214,9 +214,6 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data['correct_answers'] += 1
         context.user_data['answers'].append(user_response)
 
-        # Деактивація всіх кнопок
-        await query.edit_message_reply_markup(reply_markup=None)
-
     # Перевіряємо, чи є ще питання
     if context.user_data['survey_step'] < len(context.user_data['questions']):
         question_data = context.user_data['questions'][context.user_data['survey_step']]
